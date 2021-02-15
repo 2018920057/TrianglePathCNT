@@ -64,8 +64,8 @@ unsafe fn pathSum3(y:usize, x:usize, cache: &mut HashMap<(usize,usize),(i32,i32)
       if part1.0 > part2.0 {count = part1.1;}
       else if part1.0 < part2.0 {count = part2.1;}
       else {count = part1.1+part2.1;}
-      (cmp::max(part1.0,part2.0),count)
+      (triangle[y][x]+cmp::max(part1.0,part2.0),count)
       },
   };
-  *cache.entry((y,x)).or_insert((triangle[y][x]+max.0,max.1))
+  *cache.entry((y,x)).or_insert(max)
 }
