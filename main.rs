@@ -8,6 +8,7 @@ static mut height: usize = 0;
 //높이가 n인 lower triangular matrix가 입력되었을 때,
 //좌상에서 시작하여 아래쪽이나 그 오른쪽으로만 이동할 수 있다면
 //바닥에 닿았을 때의 최대합 구하기
+//-> 최대합인 경로의 수 구하기
 fn main() {
   unsafe{
     //입력받기
@@ -34,8 +35,9 @@ fn main() {
     }
     //최장경로 출력
     //cache.get((y,x)) = y,x에서부터 끝까지의 최대합 
-    let mut cache: HashMap<(usize,usize),i32> = HashMap::new();
-    println!("최장경로: {}",pathSum3(0,0,&mut cache));
+    let mut cache: HashMap<(usize,usize),(i32,i32)> = HashMap::new();
+    let result: (i32, i32) = pathSum3(0,0,&mut cache);
+    println!("최장경로: {}, 최장경로의 개수: {}",result.0, result.1);
   }
 }
 
@@ -50,12 +52,20 @@ unsafe fn pathSum2(y:usize, x:usize) -> i32 {
   triangle[y][x]+cmp::max(pathSum2(y+1,x),pathSum2(y+1,x+1))
 }
 //pathSum2를 memoization한 것
-unsafe fn pathSum3(y:usize, x:usize, cache: &mut HashMap<(usize,usize),i32>) -> i32 {
-  if y==height-1 {return triangle[y][x];}
+unsafe fn pathSum3(y:usize, x:usize, cache: &mut HashMap<(usize,usize),(i32,i32)>) -> (i32, i32) {
+  if y==height-1 {return (triangle[y][x],1);}
   //memoization
-  let max: i32 = match cache.get(&(y,x)){
-    Some(_) => 0,
-    None => cmp::max(pathSum3(y+1,x,cache),pathSum3(y+1,x+1,cache)),
+  let max: (i32,i32) = match cache.get(&(y,x)){
+    Some(_) => (0,0),
+    None => {
+      let part1: (i32, i32) = pathSum3(y+1,x,cache);
+      let part2: (i32, i32) = pathSum3(y+1,x+1,cache);
+      let mut count: i32 = 0;
+      if part1.0 > part2.0 {count = part1.1;}
+      else if part1.0 < part2.0 {count = part2.1;}
+      else {count = part1.1+part2.1;}
+      (cmp::max(part1.0,part2.0),count)
+      },
   };
-  *cache.entry((y,x)).or_insert(triangle[y][x]+max)
+  *cache.entry((y,x)).or_insert((triangle[y][x]+max.0,max.1))
 }
